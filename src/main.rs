@@ -8,14 +8,14 @@ extern crate serde;
 use std::cmp::max;
 use std::sync::mpsc::{Receiver, Sender};
 use std::sync::{mpsc, Arc, RwLock};
-use std::thread;
 use std::time::Duration;
+use std::{fs, thread};
 
 use crate::data::{DataContainer, Packet};
 use crate::gui::{load_gui_settings, print_to_console, MyApp, Print, RIGHT_PANEL_WIDTH};
 use crate::io::{save_to_csv, FileOptions};
 use crate::serial::{load_serial_settings, serial_thread, Device};
-use eframe::egui::{vec2, ViewportBuilder, Visuals};
+use eframe::egui::{vec2, FontData, FontFamily, ViewportBuilder, Visuals};
 use eframe::{egui, icon_data};
 use preferences::AppInfo;
 
@@ -193,6 +193,23 @@ fn main() {
         Box::new(|_cc| {
             let mut fonts = egui::FontDefinitions::default();
             egui_phosphor::add_to_fonts(&mut fonts, egui_phosphor::Variant::Regular);
+            fonts.font_data.insert(
+                "zh-cn".to_owned(),
+                FontData::from_owned(fs::read("font/SmileySans-Oblique.ttf").unwrap()),
+            );
+
+            fonts
+                .families
+                .entry(FontFamily::Proportional)
+                .or_default()
+                .insert(0, "zh-cn".to_owned());
+
+            fonts
+                .families
+                .entry(FontFamily::Proportional)
+                .or_default()
+                .insert(1, "phosphor".to_owned());
+
             _cc.egui_ctx.set_fonts(fonts);
             _cc.egui_ctx.set_visuals(Visuals::dark());
 

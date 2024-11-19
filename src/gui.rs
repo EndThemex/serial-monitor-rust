@@ -783,7 +783,7 @@ impl MyApp {
                                 ctx.send_viewport_cmd(egui::ViewportCommand::Screenshot);
                             }
                             ui.end_row();
-                            if ui.button(egui::RichText::new(format!("{} Clear Data", egui_phosphor::regular::X)))
+                            if ui.button(egui::RichText::new(format!("{} Clear Data/清除数据", egui_phosphor::regular::X)))
                                 .on_hover_text("Clear Data from Plot.")
                                 .clicked() || ui.input_mut(|i| i.consume_shortcut(&CLEAR_PLOT_SHORTCUT)) {
                                 print_to_console(
