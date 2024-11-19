@@ -188,13 +188,13 @@ fn main() {
     let gui_print_lock = print_lock;
 
     if let Err(e) = eframe::run_native(
-        "Serial Monitor",
+        "Serial Monitor/串口监视",
         options,
         Box::new(|_cc| {
             let mut fonts = egui::FontDefinitions::default();
             egui_phosphor::add_to_fonts(&mut fonts, egui_phosphor::Variant::Regular);
             fonts.font_data.insert(
-                "zh-cn".to_owned(),
+                "zh-CN".to_owned(),
                 FontData::from_owned(fs::read("font/SmileySans-Oblique.ttf").unwrap()),
             );
 
@@ -202,7 +202,7 @@ fn main() {
                 .families
                 .entry(FontFamily::Proportional)
                 .or_default()
-                .insert(0, "zh-cn".to_owned());
+                .insert(0, "zh-CN".to_owned());
 
             fonts
                 .families

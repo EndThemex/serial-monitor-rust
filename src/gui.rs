@@ -14,6 +14,7 @@ use eframe::{egui, Storage};
 use egui::ThemePreference;
 use egui_plot::{log_grid_spacer, GridMark, Legend, Line, Plot, PlotPoint, PlotPoints};
 use egui_theme_switch::ThemeSwitch;
+use fluent::types::AnyEq;
 use preferences::Preferences;
 use serde::{Deserialize, Serialize};
 use serialport::{DataBits, FlowControl, Parity, StopBits};
@@ -24,6 +25,9 @@ use crate::serial::{clear_serial_settings, save_serial_settings, Device, SerialD
 use crate::toggle::toggle;
 use crate::FileOptions;
 use crate::{APP_INFO, PREFS_KEY};
+
+use fluent::{FluentBundle, FluentResource};
+use unic_langid::LanguageIdentifier;
 
 const DEFAULT_FONT_ID: FontId = FontId::new(14.0, FontFamily::Monospace);
 pub const RIGHT_PANEL_WIDTH: f32 = 350.0;
@@ -174,6 +178,24 @@ pub enum ColorWindow {
     ColorIndex(usize),
 }
 
+fn load_locale(locale: &str) -> FluentBundle<FluentResource> {
+    // 定义语言标识符
+    let langid: LanguageIdentifier = locale.parse().expect("Failed to parse language identifier");
+
+    // 加载 Fluent 资源文件
+    let ftl_string =
+        std::fs::read_to_string(format!("i18n/{}.ftl", locale)).expect("Failed to read FTL file");
+    let resource = FluentResource::try_new(ftl_string).expect("Failed to parse FTL string");
+
+    // 创建 FluentBundle
+    let mut bundle = FluentBundle::new(vec![langid]);
+    bundle
+        .add_resource(resource)
+        .expect("Failed to add FTL resources");
+
+    bundle
+}
+
 pub struct MyApp {
     connected_to_device: bool,
     command: String,
@@ -208,6 +230,7 @@ pub struct MyApp {
     save_raw: bool,
     show_warning_window: WindowFeedback,
     do_not_show_clear_warning: bool,
+    translations: FluentBundle<FluentResource>,
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -260,6 +283,7 @@ impl MyApp {
             do_not_show_clear_warning: false,
             show_warning_window: WindowFeedback::None,
             show_color_window: ColorWindow::NoShow,
+            translations: load_locale("zh-CN"),
         }
     }
 
@@ -273,17 +297,20 @@ impl MyApp {
             .show(ctx, |ui| {
                 ui.vertical_centered(|ui| {
                     ui.add_space(20.0);
-                    ui.label("Changing devices will clear all data.");
-                    ui.label("How do you want to proceed?");
+                    ui.label("Changing devices will clear all data/切换设备将清除所有数据.");
+                    ui.label("How do you want to proceed/怎样处理?");
                     ui.add_space(20.0);
-                    ui.checkbox(&mut self.do_not_show_clear_warning, "Remember my decision.");
+                    ui.checkbox(
+                        &mut self.do_not_show_clear_warning,
+                        "Remember my decision/记住我的选择.",
+                    );
                     ui.add_space(20.0);
                     ui.horizontal(|ui| {
                         ui.add_space(130.0);
-                        if ui.button("Continue & Clear").clicked() {
+                        if ui.button("Continue & Clear/继续并清理").clicked() {
                             window_feedback = WindowFeedback::Clear;
                         }
-                        if ui.button("Cancel").clicked() {
+                        if ui.button("Cancel/取消").clicked() {
                             window_feedback = WindowFeedback::Cancel;
                         }
                     });
@@ -458,13 +485,14 @@ impl MyApp {
                     ui.horizontal(|ui| {
                         let cmd_line = ui.add(
                             egui::TextEdit::singleline(&mut self.command)
-                                .desired_width(width - 50.0)
+                                .desired_width(width - 60.0)
                                 .lock_focus(true)
                                 .code_editor(),
                         );
                         let cmd_has_lost_focus = cmd_line.lost_focus();
                         let key_pressed = ui.input(|i| i.key_pressed(egui::Key::Enter));
-                        if (key_pressed && cmd_has_lost_focus) || ui.button("Send").clicked() {
+                        if (key_pressed && cmd_has_lost_focus) || ui.button("Send/发送").clicked()
+                        {
                             // send command
                             self.history.push(self.command.clone());
                             self.index = self.history.len() - 1;
@@ -508,7 +536,7 @@ impl MyApp {
             .show(ctx, |ui| {
                 ui.add_enabled_ui(true, |ui| {
                     ui.horizontal(|ui| {
-                        ui.heading("Serial Monitor");
+                        ui.heading("串口监视".to_owned());
                         self.paint_connection_indicator(ui);
                     });
 
@@ -528,9 +556,9 @@ impl MyApp {
                     }
                     ui.add_space(10.0);
                     ui.horizontal(|ui| {
-                        ui.label("Device");
+                        ui.label("Device/设备");
                         ui.add_space(130.0);
-                        ui.label("Baud");
+                        ui.label("Baud/端口");
                     });
 
                     let old_name = self.device.clone();
