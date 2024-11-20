@@ -14,7 +14,6 @@ use eframe::{egui, Storage};
 use egui::ThemePreference;
 use egui_plot::{log_grid_spacer, GridMark, Legend, Line, Plot, PlotPoint, PlotPoints};
 use egui_theme_switch::ThemeSwitch;
-use fluent::types::AnyEq;
 use preferences::Preferences;
 use serde::{Deserialize, Serialize};
 use serialport::{DataBits, FlowControl, Parity, StopBits};
@@ -26,7 +25,7 @@ use crate::toggle::toggle;
 use crate::FileOptions;
 use crate::{APP_INFO, PREFS_KEY};
 
-use fluent::{FluentBundle, FluentResource};
+use fluent::{FluentArgs, FluentBundle, FluentResource};
 use unic_langid::LanguageIdentifier;
 
 const DEFAULT_FONT_ID: FontId = FontId::new(14.0, FontFamily::Monospace);
@@ -287,6 +286,24 @@ impl MyApp {
         }
     }
 
+    fn get_locale_text<'args>(
+        &mut self,
+        key: &str,
+        format_args: Option<&'args FluentArgs>,
+    ) -> String {
+        let msg = self
+            .translations
+            .get_message(key)
+            .and_then(|msg| msg.value())
+            .unwrap();
+        let mut errors = vec![];
+        let s_text = self
+            .translations
+            .format_pattern(msg, format_args, &mut errors);
+
+        s_text.to_string()
+    }
+
     pub fn clear_warning_window(&mut self, ctx: &egui::Context) -> WindowFeedback {
         let mut window_feedback = WindowFeedback::Waiting;
         egui::Window::new("Attention!")
@@ -536,7 +553,8 @@ impl MyApp {
             .show(ctx, |ui| {
                 ui.add_enabled_ui(true, |ui| {
                     ui.horizontal(|ui| {
-                        ui.heading("串口监视".to_owned());
+                        let msg = self.get_locale_text("serial-monitor", None);
+                        ui.heading(msg);
                         self.paint_connection_indicator(ui);
                     });
 
