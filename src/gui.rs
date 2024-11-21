@@ -508,7 +508,8 @@ impl MyApp {
                         );
                         let cmd_has_lost_focus = cmd_line.lost_focus();
                         let key_pressed = ui.input(|i| i.key_pressed(egui::Key::Enter));
-                        if (key_pressed && cmd_has_lost_focus) || ui.button("Send/发送").clicked()
+                        if (key_pressed && cmd_has_lost_focus)
+                            || ui.button(self.get_locale_text("send", None)).clicked()
                         {
                             // send command
                             self.history.push(self.command.clone());
@@ -574,7 +575,7 @@ impl MyApp {
                     }
                     ui.add_space(10.0);
                     ui.horizontal(|ui| {
-                        ui.label("Device/设备");
+                        ui.label(self.get_locale_text("device", None));
                         ui.add_space(130.0);
                         ui.label("Baud/端口");
                     });
@@ -779,7 +780,7 @@ impl MyApp {
                             });
 
                             ui.end_row();
-                            ui.label("Show Sent Commands");
+                            ui.label(self.get_locale_text("show-send-commands", None));
                             ui.add(toggle(&mut self.show_sent_cmds))
                                 .on_hover_text("Show sent commands in console.");
                             ui.end_row();
