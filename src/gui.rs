@@ -487,7 +487,7 @@ impl MyApp {
 
     fn draw_serial_settings(&mut self, ctx: &egui::Context, ui: &mut Ui) {
         ui.horizontal(|ui| {
-            ui.heading("Serial Monitor");
+            ui.heading(self.get_locale_text("serial-monitor", None));
             self.paint_connection_indicator(ui);
         });
 
@@ -507,9 +507,9 @@ impl MyApp {
         }
         ui.add_space(10.0);
         ui.horizontal(|ui| {
-            ui.label("Device");
+            ui.label(self.get_locale_text("device", None));
             ui.add_space(130.0);
-            ui.label("Baud");
+            ui.label(self.get_locale_text("baud", None));
         });
 
         let old_name = self.device.clone();
